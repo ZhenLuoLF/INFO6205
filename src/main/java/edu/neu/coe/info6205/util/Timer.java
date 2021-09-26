@@ -1,5 +1,6 @@
 package edu.neu.coe.info6205.util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -55,7 +56,34 @@ public class Timer {
     public <T, U> double repeat(int n, Supplier<T> supplier, Function<T, U> function, UnaryOperator<T> preFunction, Consumer<U> postFunction) {
         logger.trace("repeat: with " + n + " runs");
         // TO BE IMPLEMENTED: note that the timer is running when this method is called and should still be running when it returns.
-        return 0;
+        T sup_t = supplier.get();
+        for (int i = 0; i < n; i++){
+            if(preFunction != null && postFunction != null) {
+               pause();
+               T preF_t = preFunction.apply(sup_t);
+               resume();
+               U fun_u = function.apply(preF_t);
+               pauseAndLap();
+               postFunction.accept(fun_u);
+               resume();
+            }else if (preFunction != null && postFunction == null) {
+                pause();
+                T preF_t = preFunction.apply(sup_t);
+                resume();
+                function.apply(preF_t);
+                lap();
+            }else if(preFunction == null && postFunction != null){
+                U fun_u = function.apply(sup_t);
+                pauseAndLap();
+                postFunction.accept(fun_u);
+                resume();
+            }else {
+                function.apply(sup_t);
+                lap();
+                }
+            }
+        pause();
+        return meanLapTime();
     }
 
     /**
@@ -174,7 +202,8 @@ public class Timer {
      */
     private static long getClock() {
         // TO BE IMPLEMENTED
-        return 0;
+        long nanoTime = System.nanoTime();
+        return nanoTime;
     }
 
     /**
@@ -186,7 +215,8 @@ public class Timer {
      */
     private static double toMillisecs(long ticks) {
         // TO BE IMPLEMENTED
-        return 0;
+        double ticks_inMil = ticks / 1000000F;
+        return ticks_inMil;
     }
 
     final static LazyLogger logger = new LazyLogger(Timer.class);
